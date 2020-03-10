@@ -17,4 +17,14 @@ const retrieveGuestEmails = (): string[] => {
   return 
 }
 
+const checkUniqueEmail = (email: string, email_list: string[]): boolean => {
+  for (let i = 0; i < email_list.length; i++) { // eslint-disable-line
+    if (email === email_list[i]) {
+      console.log('This email has been registered');
+      return false;
+    }
+  }
+  return true;
+};
+
 export const hello = 'l';
