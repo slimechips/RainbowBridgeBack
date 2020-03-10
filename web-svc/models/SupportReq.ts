@@ -6,7 +6,7 @@ export interface SupportReq {
   email: string;
   category: Category;
   reqTime: Date;
-  tokenId: string;
+  reqId: number;
   browserId: string;
   status: ReqStatus;
 }

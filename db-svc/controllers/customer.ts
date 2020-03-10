@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, Router } from 'express';
-import { cfg } from 'f10-util/configs';
+import { cfg } from 'common-util/configs';
 import { pool } from './init';
 import { MySQLResponse } from '../models/MySQLResponse';
 import { getGenericData, formatString, convArrToSQL, splitStrData } from './common';
@@ -118,6 +118,8 @@ export const getReqUpload = (req: Request, res: Response, next: NextFunction): v
     res.status(200).json({ upload: eCustData });
   }).catch((err: Error) => next({ err }));
 };
+
+const _addSupport
 
 const _editCustomerData = (toAdd: object, customer: string): Promise<MySQLResponse> => {
   let sqlCommand = `UPDATE ${cfg.db_details.cust_dir_table} SET `;

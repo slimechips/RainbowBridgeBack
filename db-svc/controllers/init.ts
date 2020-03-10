@@ -1,4 +1,4 @@
-import { cfg } from 'f10-util/configs';
+import { cfg } from 'common-util/configs';
 import mysql, { Pool } from 'mysql'; // eslint-disable-line
 
 interface DBCreds {
@@ -18,15 +18,15 @@ const _getDBCreds = (): DBCreds => {
   return dbCreds;
 };
 
-const db = {
-  database: cfg.db_details.database,
+const supportReqDb = {
+  database: cfg.dbs.support_req_db.name,
   connectionLimit: cfg.db_details.conn_count,
   ..._getDBCreds(),
 };
 
 const _connectToDB = (): Pool => {
   const pool: Pool = mysql.createPool({
-    ...db,
+    ...supportReqDb,
   });
   return pool;
 };

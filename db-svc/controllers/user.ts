@@ -1,5 +1,5 @@
 import { Response, Request, NextFunction, Router } from 'express'; // eslint-disable-line
-import { cfg } from 'f10-util/configs';
+import { cfg } from 'common-util/configs';
 import { getGenericData, destructureSQL } from './common';
 import { FFData } from '../models/FFData';
 
