@@ -13,12 +13,12 @@ export const postSupportReq = (req: Request, res: Response,
 };
 
 const retrieveGuestEmails = (): string[] => {
-  
+
   return 
 }
 
 const checkUniqueEmail = (email: string, email_list: string[]): boolean => {
-  for (let i = 0; i < email_list.length; i++) { // eslint-disable-line
+  for (let i = 0; i < email_list.length; i++) {
     if (email === email_list[i]) {
       console.log('This email has been registered');
       return false;

@@ -25,5 +25,6 @@ module.exports = {
         "no-underscore-dangle": "off",
         "camelcase": "off",
         "object-curly-newline": "off",
+        "allowForLoopAfterThoughts": "on",
     }
 };
