@@ -1,0 +1,15 @@
+{
+  "service": "db-svc",
+  "endpoints_file": "../etc/endpoints.json",
+  "client_secret": "secret",
+  "db_details": {
+    "database": "innodb",
+    "usr_dir_table": "usr_dir",
+    "cust_dir_table": "customer_dir",
+    "conn_count": 50,
+    "host": "f10-db-dev.cu2o1me4mc4l.ap-southeast-1.rds.amazonaws.com",
+    "port": "3306",
+    "usr": "admin",
+    "pwd": "rahulboss"
+  }
+}
