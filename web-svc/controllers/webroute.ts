@@ -1,5 +1,6 @@
 import { Response, Request, NextFunction, Router } from 'express';
 import axios, { AxiosResponse } from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 import { endpoints } from 'common-util/configs';
 import { SupportReq } from '../models/SupportReq';
 
@@ -9,6 +10,12 @@ export const router = Router();
 export const postSupportReq = (req: Request, res: Response,
   next: NextFunction): void => {
   const suppReq: SupportReq = req.body.support_req;
+  if (!_checkSupportRequest(suppReq)) {
+    next({ msg: 'Invalid Fields' });
+    return;
+  }
+  suppReq.reqId = uuidv4();
+  suppReq.reqTime = new Date();
   _retrieveGuestEmails()
     .then((emails: string[]) => {
       if (!_checkUniqueEmail(suppReq.email, emails)) {
@@ -17,7 +24,7 @@ export const postSupportReq = (req: Request, res: Response,
     })
     .then(() => _addNewSupportReqDb(suppReq))
     .then((rs: AxiosResponse) => {
-      if (rs.status !== 200) throw new Error('Adding support req failed');
+      if (rs.status !== 200) throw new Error();
       res.status(200).json({ success: true });
     })
     .catch((err: Error) => next({ err, msg: 'Adding support req failed' }));
@@ -41,4 +48,15 @@ const _checkUniqueEmail = (email: string, email_list: string[]): boolean => {
 const _addNewSupportReqDb = (suppReq: SupportReq): Promise<AxiosResponse> => {
   const apiUrl = `${endpoints.db.full_url}/supportreq/addnew`;
   return axios.post(apiUrl, { support_req: suppReq });
+};
+
+const _checkSupportRequest = (suppReq: SupportReq): boolean => {
+  const required = ['name', 'email', 'category', 'browserId'];
+  let valid = true;
+  required.forEach((field: string) => {
+    if (suppReq[field as keyof SupportReq] === undefined) {
+      valid = false;
+    }
+  });
+  return valid;
 };

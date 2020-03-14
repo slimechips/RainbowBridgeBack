@@ -33,7 +33,7 @@ exports.errorHandler = function (options, _req, res, _next) {
     var errorMsg;
     if (msg === undefined || msg === true) {
         if (err !== undefined) {
-            errorMsg = err.stack || 'Unknown Error';
+            errorMsg = err.stack || err.message || 'Unknown Error';
         }
         else {
             errorMsg = 'Unknown Error 1';

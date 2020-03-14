@@ -34,7 +34,7 @@ export const errorHandler = (options: Options, _req: Request, res: Response
 
   if (msg === undefined || msg === true) {
     if (err !== undefined) {
-      errorMsg = err.stack || 'Unknown Error';
+      errorMsg = err.message || err.stack || 'Unknown Error';
     } else {
       errorMsg = 'Unknown Error 1';
     }
