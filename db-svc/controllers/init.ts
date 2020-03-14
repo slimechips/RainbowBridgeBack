@@ -24,11 +24,11 @@ const supportReqDb = {
   ..._getDBCreds(),
 };
 
-const _connectToDB = (): Pool => {
+const _connectToSupportReqDB = (): Pool => {
   const pool: Pool = mysql.createPool({
     ...supportReqDb,
   });
   return pool;
 };
 
-export const pool: Pool = _connectToDB();
+export const supportReqPool: Pool = _connectToSupportReqDB();

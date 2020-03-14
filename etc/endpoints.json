@@ -5,5 +5,12 @@
     "local_host": "localhost",
     "http_port": 3030,
     "path": ""
+  },
+  "db": {
+    "url_scheme": "http://",
+    "service_name": "db-svc",
+    "local_host": "localhost",
+    "http_port": 3031,
+    "path": ""
   }
 }

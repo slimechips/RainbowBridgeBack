@@ -15,7 +15,19 @@
   "dbs": {
     "support_req_db": {
       "name": "support_reqs",
-      "tables": {}
+      "tables": {
+        "new_reqs": {
+          "name": "new_support_reqs",
+          "cols": {
+            "reqId": "req_id",
+            "name": "name",
+            "email": "email",
+            "category": "category",
+            "reqTime": "req_time",
+            "browserId": "browser_id"
+          }
+        }
+      }
     }
   }
 }

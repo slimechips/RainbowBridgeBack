@@ -8,8 +8,7 @@ import { reqLogger } from 'common-util/logger';
 import { errorHandler } from 'common-util/error';
 
 // Controllers
-import * as userController from './controllers/user';
-import * as custController from './controllers/customer';
+import * as supportReqCnt from './controllers/supportreq';
 
 const app: express.Application = express();
 
@@ -18,22 +17,11 @@ app.use(bodyParser.urlencoded({ extended: true })); // Body Parser Middle Ware
 app.use(bodyParser.json()); // Body Parser Middle Ware
 app.use(reqLogger); // Logger Middleware
 
-// Init user controller internal routes here
-userController.router.get('/:username/password', userController.getPassword);
-userController.router.get('/:username/customers/get', userController.getCustomers);
-
 // Init customer controller internal routes here
-custController.router.post('/:customer/details/edit', custController.postEditDetails);
-custController.router.get('/:customers/getdetails', custController.getCustomerDetails);
-custController.router.get('/:customers/getcurnews', custController.getNews);
-custController.router.post('/:customer/setnews', custController.postNews);
-custController.router.get('/:id/password', custController.getPassword);
-custController.router.post('/:customer/upload/add', custController.postAddReqUpload);
-custController.router.get('/:cusomter/upload/get', custController.getReqUpload);
+supportReqCnt.router.post('/addnew', supportReqCnt.postAddNewSupportReq);
 
 // Add custom controller routes here
-app.use('/user', userController.router);
-app.use('/customer', custController.router);
+app.use('/supportreq/', supportReqCnt.router);
 
 // Error Handling Middleware goes here
 app.use(errorHandler);

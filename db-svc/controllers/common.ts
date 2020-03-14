@@ -1,4 +1,5 @@
-import { pool } from './init';
+import { supportReqPool } from './init';
+import { MySQLResponse } from '../models/MySQLResponse';
 
 /**
  * Get data about a row
@@ -15,7 +16,7 @@ export const getGenericData = (rowType: string, table: string,
   console.info(`sqlCommand=${sqlCommand}`);
 
   return new Promise((resolve, reject): void => {
-    pool.query(sqlCommand, (err: Error, rs: Array<object>) => {
+    supportReqPool.query(sqlCommand, (err: Error, rs: Array<object>) => {
       if (err) {
         console.log(err);
         return reject(err);
@@ -52,4 +53,12 @@ export const convArrToSQL = (obj: Array<string>): string => {
 export const splitStrData = (data: string): Array<string> => {
   const splitData: Array<string> = data.split('|');
   return splitData;
+};
+
+/**
+ * Prints the SQL response to console
+ * @param rs Retrieved SQL response
+ */
+export const printMySQLRes = (rs: MySQLResponse): void => {
+  console.info(`Db data: ${JSON.stringify(rs)}`);
 };
