@@ -16,6 +16,7 @@ export const postSupportReq = (req: Request, res: Response,
   }
   suppReq.reqId = uuidv4();
   suppReq.reqTime = new Date();
+  let errorThrown = false;
   _retrieveGuestEmails()
     .then((emails: string[]) => {
       if (!_checkUniqueEmail(suppReq.email, emails)) {
@@ -27,7 +28,17 @@ export const postSupportReq = (req: Request, res: Response,
       if (rs.status !== 200) throw new Error();
       res.status(200).json({ success: true });
     })
-    .catch((err: Error) => next({ err, msg: 'Adding support req failed' }));
+    .catch((err: Error) => {
+      if (errorThrown) throw err;
+      next({ err, msg: 'Adding support req failed' });
+      errorThrown = true;
+      throw err;
+    })
+    .then(_signalCheckDB)
+    .catch((err: Error) => {
+      console.error(err.message);
+      console.error('Failed to signal db');
+    });
 };
 
 const _retrieveGuestEmails = (): Promise<string[]> => {
@@ -59,4 +70,10 @@ const _checkSupportRequest = (suppReq: SupportReq): boolean => {
     }
   });
   return valid;
+};
+
+const _signalCheckDB = (): Promise<AxiosResponse> => {
+  // TODO: Implement
+  const apiUrl = 'https//www.google.com';
+  return axios.get(apiUrl);
 };
