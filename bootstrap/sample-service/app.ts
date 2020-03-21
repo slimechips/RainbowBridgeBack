@@ -3,9 +3,9 @@ import bodyParser from 'body-parser';
 
 const svc = 'db';
 process.env.SVC = `${svc}-svc`;
-import { endpoints } from 'f10-util/configs';
-import { reqLogger } from 'f10-util/logger';
-import { errorHandler } from 'f10-util/error';
+import { endpoints } from 'common-util/configs';
+import { reqLogger } from 'common-util/logger';
+import { errorHandler } from 'common-util/error';
 
 // Controllers
 import * as userController from './controllers/user';
