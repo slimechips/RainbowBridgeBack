@@ -27,12 +27,10 @@ export const getValidateToken = (req: Request, res: Response,
     .catch((err: Error) => next({ err }));
 };
 
-const _validateToken = (): Promise<AxiosResponse> => {
-  const apiUrl = `${cfg.rainbow.scheme}${cfg.rainbow.base_url}:`
-    + `${cfg.rainbow.port}${cfg.rainbow.endpoints.auth_validate}`;
-  return axios.get(apiUrl);
-};
-
+/**
+ * Called on application alive
+ * Authenticates this server with Rainbow API server and sets request headers
+ */
 const _getToken = (): Promise<void> => new Promise((resolve, reject): void => {
   _authenticateApp()
     .then(_extractToken)
@@ -47,6 +45,9 @@ const _getToken = (): Promise<void> => new Promise((resolve, reject): void => {
     });
 });
 
+/**
+ * Authenticate app and request a token from Rainbow API server
+ */
 const _authenticateApp = (): Promise<AxiosResponse> => {
   const apiUrl = `${cfg.rainbow.scheme}${cfg.rainbow.base_url}:`
     + `${cfg.rainbow.port}${cfg.rainbow.endpoints.login}`;
@@ -64,6 +65,11 @@ const _authenticateApp = (): Promise<AxiosResponse> => {
   return axios.get(apiUrl, { headers });
 };
 
+/**
+ * Extracts the value of the token from Rainbow API
+ * @param data The response from the Rainbow API Server
+ * @return {string} token to be used for API calls
+ */
 const _extractToken = (data: AxiosResponse): string => {
   interface LoginResponse {
     loggedInApplication: object;
@@ -75,9 +81,22 @@ const _extractToken = (data: AxiosResponse): string => {
   return body.token;
 };
 
+/**
+ * Sets the bearer token for future requests through axios
+ * @param token Token to set
+ */
 const _setTokenToHeader = (token: string): void => {
   axios.defaults.headers.common['Authorization'] = `Bearer ${token}`; // eslint-disable-line
   console.info(`Set token as: ${token}`);
+};
+
+/**
+ * Validate the current token used for API calls to Rainbow Server
+ */
+const _validateToken = (): Promise<AxiosResponse> => {
+  const apiUrl = `${cfg.rainbow.scheme}${cfg.rainbow.base_url}:`
+    + `${cfg.rainbow.port}${cfg.rainbow.endpoints.auth_validate}`;
+  return axios.get(apiUrl);
 };
 
 _getToken();
