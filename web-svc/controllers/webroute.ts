@@ -1,5 +1,6 @@
 import { Response, Request, NextFunction, Router } from 'express';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'common-util/axios';
+import { AxiosResponse } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { endpoints } from 'common-util/configs';
 import { SupportReq } from '../models/SupportReq';

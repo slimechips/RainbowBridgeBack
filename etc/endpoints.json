@@ -12,5 +12,12 @@
     "local_host": "localhost",
     "http_port": 3031,
     "path": ""
+  },
+  "call": {
+    "url_scheme": "http://",
+    "service_name": "call-svc",
+    "local_host": "localhost",
+    "http_port": 3032,
+    "path": ""
   }
 }
