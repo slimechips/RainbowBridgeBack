@@ -16,6 +16,23 @@ export const getToken = (req: Request, res: Response,
     .catch((err: Error) => next({ err }));
 };
 
+export const getValidateToken = (req: Request, res: Response,
+  next: NextFunction): void => {
+  _validateToken()
+    .then(() => {
+      res.status(200).json({
+        status: 'OK',
+      });
+    })
+    .catch((err: Error) => next({ err }));
+};
+
+const _validateToken = (): Promise<AxiosResponse> => {
+  const apiUrl = `${cfg.rainbow.scheme}${cfg.rainbow.base_url}:`
+    + `${cfg.rainbow.port}${cfg.rainbow.endpoints.auth_validate}`;
+  return axios.get(apiUrl);
+};
+
 const _getToken = (): Promise<void> => new Promise((resolve, reject): void => {
   _authenticateApp()
     .then(_extractToken)

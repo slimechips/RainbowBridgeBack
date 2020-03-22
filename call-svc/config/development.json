@@ -11,7 +11,8 @@
     "email": "jason.chowcs@gmail.com",
     "password": "km=I60fEWy,6",
     "endpoints": {
-      "login": "/api/rainbow/authentication/v1.0/login"
+      "login": "/api/rainbow/authentication/v1.0/login",
+      "auth_validate": "/api/rainbow/authentication/v1.0/validator"
     }
   }
 }

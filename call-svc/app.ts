@@ -19,6 +19,7 @@ app.use(reqLogger); // Logger Middleware
 
 // Init user controller internal routes here
 authController.router.get('/token', authController.getToken);
+authController.router.get('/validate', authController.getValidateToken);
 
 // Add custom controller routes here
 app.use('/auth', authController.router);
