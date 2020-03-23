@@ -3,6 +3,7 @@ import axios from 'common-util/axios';
 import { cfg } from 'common-util/configs';
 import { AxiosResponse, AxiosError } from 'axios';
 import crypto from 'crypto';
+import { SupportReq } from '../models/SupportReq';
 
 // Init router here
 export const router = Router();
@@ -100,3 +101,16 @@ const _validateToken = (): Promise<AxiosResponse> => {
 };
 
 _getToken();
+
+const _createGuest = (suppReq: SupportReq): Promise<AxiosResponse> => {
+  const apiUrl = `${cfg.rainbow.scheme}${cfg.rainbow.base_url}:`
+  + `${cfg.rainbow.port}${cfg.rainbow.endpoints.create_user}`;
+  const body = {
+    firstName: suppReq.name,
+    loginEmail: suppReq.email,
+    roles: '["guest"]',
+    userInfo1: suppReq.reqId, // Req_id here
+    userInfo2: suppReq.browserId, // Browser_id here
+  };
+  return axios.post(apiUrl, body);
+};

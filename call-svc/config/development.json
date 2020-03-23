@@ -12,7 +12,8 @@
     "password": "km=I60fEWy,6",
     "endpoints": {
       "login": "/api/rainbow/authentication/v1.0/login",
-      "auth_validate": "/api/rainbow/authentication/v1.0/validator"
+      "auth_validate": "/api/rainbow/authentication/v1.0/validator",
+      "create_user": "/api/rainbow/admin/v1.0/users"
     }
   }
 }

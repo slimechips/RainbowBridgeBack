@@ -9,6 +9,7 @@ import { errorHandler } from 'common-util/error';
 
 // Controllers
 import * as authController from './controllers/auth';
+import * as schController from './controllers/scheduler';
 
 const app: express.Application = express();
 
@@ -21,8 +22,12 @@ app.use(reqLogger); // Logger Middleware
 authController.router.get('/token', authController.getToken);
 authController.router.get('/validate', authController.getValidateToken);
 
+// Init Scheduler controller internal routes here
+schController.router.post('/reqagent', schController.postReqAgent);
+
 // Add custom controller routes here
 app.use('/auth', authController.router);
+app.use('/scheduler', schController.router);
 
 // Error Handling Middleware goes here
 app.use(errorHandler);
