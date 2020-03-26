@@ -62,3 +62,7 @@ export const splitStrData = (data: string): Array<string> => {
 export const printMySQLRes = (rs: MySQLResponse): void => {
   console.info(`Db data: ${JSON.stringify(rs)}`);
 };
+
+export const arrPrintMySQLRes = <T>(arr: T[]): void => {
+  console.info(`Db data: ${arr.toString()}`);
+};

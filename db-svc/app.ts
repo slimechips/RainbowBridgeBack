@@ -19,6 +19,8 @@ app.use(reqLogger); // Logger Middleware
 
 // Init customer controller internal routes here
 supportReqCnt.router.post('/addnew', supportReqCnt.postAddNewSupportReq);
+supportReqCnt.router.get('/getnew', supportReqCnt.getRetreiveNewSupportReq);
+supportReqCnt.router.post('/swaptable', supportReqCnt.postShiftSupportReq);
 
 // Add custom controller routes here
 app.use('/supportreq/', supportReqCnt.router);

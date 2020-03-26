@@ -17,7 +17,6 @@ export const postSupportReq = (req: Request, res: Response,
   }
   suppReq.reqId = uuidv4();
   suppReq.reqTime = new Date();
-  let errorThrown = false;
   _retrieveGuestEmails()
     .then((emails: string[]) => {
       if (!_checkUniqueEmail(suppReq.email, emails)) {
@@ -25,20 +24,18 @@ export const postSupportReq = (req: Request, res: Response,
       }
     })
     .then(() => _addNewSupportReqDb(suppReq))
+    .then(() => _reqAgent(suppReq))
     .then((rs: AxiosResponse) => {
       if (rs.status !== 200) throw new Error();
-      res.status(200).json({ success: true });
+      const retSuppReq: SupportReq = rs.data.suppReq;
+      const msg = `User ${retSuppReq.name} with id ${retSuppReq.guestId}`
+        + `to connect with agent ${retSuppReq.agentName} with agentId`
+        + `${retSuppReq.agentId}`;
+      console.log(msg);
+      res.status(200).json({ support_req: retSuppReq });
     })
     .catch((err: Error) => {
-      if (errorThrown) throw err;
       next({ err, msg: 'Adding support req failed' });
-      errorThrown = true;
-      throw err;
-    })
-    .then(_signalCheckDB)
-    .catch((err: Error) => {
-      console.error(err.message);
-      console.error('Failed to signal db');
     });
 };
 
@@ -62,6 +59,11 @@ const _addNewSupportReqDb = (suppReq: SupportReq): Promise<AxiosResponse> => {
   return axios.post(apiUrl, { support_req: suppReq });
 };
 
+const _reqAgent = (suppReq: SupportReq): Promise<AxiosResponse> => {
+  const apiUrl = `${endpoints.call.full_url}/scheduler/reqagent`;
+  return axios.post(apiUrl, { support_req: suppReq });
+};
+
 const _checkSupportRequest = (suppReq: SupportReq): boolean => {
   const required = ['name', 'email', 'category', 'browserId'];
   let valid = true;
@@ -71,10 +73,4 @@ const _checkSupportRequest = (suppReq: SupportReq): boolean => {
     }
   });
   return valid;
-};
-
-const _signalCheckDB = (): Promise<AxiosResponse> => {
-  // TODO: Implement
-  const apiUrl = 'https//www.google.com';
-  return axios.get(apiUrl);
 };

@@ -9,4 +9,7 @@ export interface SupportReq {
   reqId: string;
   browserId: string;
   status: ReqStatus;
+  guestId?: string;
+  agentId?: string;
+  agentName?: string;
 }
