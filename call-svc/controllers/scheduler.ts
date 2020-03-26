@@ -230,7 +230,7 @@ const _createGuest = (suppReq: SupportReq): Promise<AxiosResponse> => {
     firstName: suppReq.name,
     loginEmail: suppReq.email,
     roles: ['guest'],
-    passowrd: 'Rainbow1!', // Hardcode for now
+    password: 'Rainbow1!', // Hardcode for now
     userInfo1: suppReq.reqId, // Req_id here
     userInfo2: suppReq.browserId, // Browser_id here
   };
