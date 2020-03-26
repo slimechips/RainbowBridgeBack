@@ -3,7 +3,6 @@ import axios from 'common-util/axios';
 import { cfg } from 'common-util/configs';
 import { AxiosResponse, AxiosError } from 'axios';
 import crypto from 'crypto';
-import { SupportReq } from '../models/SupportReq';
 
 // Init router here
 export const router = Router();

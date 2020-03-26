@@ -43,6 +43,16 @@ export const postShiftSupportReq = (req: Request, res: Response,
     });
 };
 
+export const getCheckForSupportReq = (req: Request, res: Response,
+  next: NextFunction): void => {
+  const { agentId } = req.params;
+  _retrieveScheduledReq(agentId)
+    .then((suppReq: SupportReq) => {
+      res.status(200).json({ suppReq });
+    })
+    .catch((err: Error) => next({ err }));
+};
+
 /**
  * Add a support request to the specified request table
  * @returns {boolean} SQL command success/failure
@@ -127,6 +137,26 @@ const _deleteReqFromTable = (suppReq: SupportReq,
         reject(new Error('Cannot delete req'));
       }
       resolve();
+    });
+  });
+};
+
+const _retrieveScheduledReq = (agentId: string): Promise<SupportReq> => {
+  const table = cfg.dbs.support_req_db.tables.scheduled_reqs.name;
+  const sqlCommand = `SELECT * FROM ${table} WHERE agent_id = '${agentId}'`;
+  console.info(`_retrieveScheduledReq: sqlCommand=${sqlCommand}`);
+  return new Promise((resolve, reject): void => {
+    supportReqPool.query(sqlCommand, (err: Error, rs: SupportReq[]) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      arrPrintMySQLRes(rs);
+      if (rs.length < 1) {
+        reject(new Error('No support Req Found'));
+        return;
+      }
+      resolve(rs[0]);
     });
   });
 };

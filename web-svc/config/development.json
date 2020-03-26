@@ -1,5 +1,19 @@
 {
   "service": "web-svc",
   "endpoints_file": "../etc/endpoints.json",
-  "client_secret": "secret"
+  "client_secret": "secret",
+  "rainbow": {
+    "scheme": "https://",
+    "base_url": "sandbox.openrainbow.com",
+    "port": 443,
+    "app_id": "843d81a06c2311eaa8fbfb2c1e16e226",
+    "app_secret_key": "0iV19xt6OdGoQb2N9V1Evp1KKkOV9FHRIn8c9bEOFixcwzKwDB3xWAGp1MVmWEkg",
+    "email": "jason.chowcs@gmail.com",
+    "password": "km=I60fEWy,6",
+    "company_id": "5e60a48fd8084c29e64eb849",
+    "endpoints": {
+      "login": "/api/rainbow/authentication/v1.0/login",
+      "auth_validate": "/api/rainbow/authentication/v1.0/validator"
+    }
+  }
 }
