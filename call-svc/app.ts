@@ -1,5 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import cors from 'cors';
 
 const svc = 'call';
 process.env.SVC = `${svc}-svc`;
@@ -16,6 +17,7 @@ const app: express.Application = express();
 // Engine Setup
 app.use(bodyParser.urlencoded({ extended: true })); // Body Parser Middle Ware
 app.use(bodyParser.json()); // Body Parser Middle Ware
+app.use(cors({ origin: '*' })); // Cors middleware
 app.use(reqLogger); // Logger Middleware
 
 // Init user controller internal routes here
