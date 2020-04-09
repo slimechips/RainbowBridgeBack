@@ -18,7 +18,8 @@ export const postAddNewSupportReq = (req: Request, res: Response,
 
 export const getRetreiveNewSupportReq = (req: Request, res: Response,
   next: NextFunction): void => {
-  _retreiveSuppReqs()
+  const table: string = cfg.dbs.support_req_db.tables.new_reqs.name;
+  _retreiveSuppReqs(table, null, null)
     .then((suppReqs: SupportReq[]) => res.status(200).json({ data: suppReqs }))
     .catch((err: Error) => next({ err }));
 };
@@ -32,23 +33,75 @@ export const postShiftSupportReq = (req: Request, res: Response,
   } = req.body;
   const fromTable = cfg.dbs.support_req_db.tables[from].name;
   const toTable = cfg.dbs.support_req_db.tables[to].name;
-  _deleteReqFromTable(suppReq, fromTable)
+  _deleteReqFromTable(suppReq.reqId, fromTable)
     .then(() => {
       _addSupportReq(suppReq, toTable);
     })
     .then(() => res.status(200).json({ success: true }))
     .catch((err: Error) => {
       // TODO: Add req back if failed to add to table
-      next({ err });
+      next({ err, msg: err.stack });
     });
 };
 
-export const getCheckForSupportReq = (req: Request, res: Response,
+export const getCheckReq = (req: Request, res: Response,
   next: NextFunction): void => {
-  const { agentId } = req.params;
-  _retrieveScheduledReq(agentId)
-    .then((suppReq: SupportReq) => {
+  const { agentId, reqId, email }: {
+    agentId: string | undefined;
+    reqId: string | undefined;
+    email: string | undefined;
+  } = req.query;
+  const table = cfg.dbs.support_req_db.tables.scheduled_reqs.name;
+  const [cond, val] = _getCondAndVal(agentId, reqId, email);
+  _retreiveSuppReqs(table, cond, val)
+    .then((suppReqs: SupportReq[]) => {
+      const suppReq: SupportReq = suppReqs[0];
       res.status(200).json({ suppReq });
+    })
+    .catch((err: Error) => next({ err }));
+};
+
+export const getDeleteAllReqs = (req: Request, res: Response,
+  next: NextFunction): void => {
+  const { neww, scheduled }: { neww: string; scheduled: string } = req.query;
+  const newB = neww === 'true';
+  const schB = scheduled === 'true';
+
+  Promise.resolve()
+    .then(() => {
+      const newDb: string = cfg.dbs.support_req_db.tables.new_reqs.name;
+      if (newB) {
+        return _deleteReqFromTable(null, newDb).catch(() => {});
+      }
+      console.log('Not deleting new reqs');
+      return Promise.resolve();
+    })
+    .then(() => {
+      const schDb: string = cfg.dbs.support_req_db.tables.scheduled_reqs.name;
+      if (schB) return _deleteReqFromTable(null, schDb).catch(() => {});
+      console.log('Not deleting scheduled reqs');
+      return Promise.resolve();
+    })
+    .then(() => {
+      res.status(200).json({ success: true });
+    })
+    .catch((err: Error) => next({ err, msg: err.message }));
+};
+
+export const getCloseReq = (req: Request, res: Response,
+  next: NextFunction): void => {
+  const { reqId } = req.params;
+  const schTable: string = cfg.dbs.support_req_db.tables.scheduled_reqs.name;
+  const compTable: string = cfg.dbs.support_req_db.tables.completed_reqs.name;
+  let suppReq: SupportReq;
+  _retreiveSuppReqs(schTable, 'req_id', reqId)
+    .then((suppReqs: SupportReq[]) => {
+      [suppReq] = suppReqs;
+      return _deleteReqFromTable(reqId, schTable);
+    })
+    .then(() => _addSupportReq(suppReq, compTable))
+    .then(() => {
+      res.status(200).json({ success: true });
     })
     .catch((err: Error) => next({ err }));
 };
@@ -78,6 +131,14 @@ const _addSupportReq = (supportReq: SupportReq,
   });
 };
 
+const _getCondAndVal = (agentId: string | undefined, reqId: string | undefined,
+  email: string | undefined): string[] => {
+  if (agentId !== undefined) return ['agent_id', agentId];
+  if (reqId !== undefined) return ['req_id', reqId];
+  if (email !== undefined) return ['email', email];
+  return ['', ''];
+};
+
 /**
  * Converts a support request from object to SQL string
  * @param supportReq Support request object
@@ -105,26 +166,48 @@ const _supportReqToSQL = (supportReq: SupportReq,
   return commandA + commandB;
 };
 
-const _retreiveSuppReqs = (): Promise<SupportReq[]> => {
-  const table: string = cfg.dbs.support_req_db.tables.new_reqs.name;
-  const sqlCommand = `SELECT * FROM ${table}`;
-  console.info(`_retrieveSuppReq: sqlCommand=${sqlCommand}`);
+const _retreiveSuppReqs = (table: string, cond: string | null,
+  val: string | null): Promise<SupportReq[]> => {
+  const where = cond === null ? '' : ` WHERE ${cond} = '${val}'`;
+  const sqlCommand = `SELECT * FROM ${table}${where}`;
+  console.info(`_retrieveSuppReqs: sqlCommand=${sqlCommand}`);
 
   return new Promise((resolve, reject): void => {
-    supportReqPool.query(sqlCommand, (err: Error, rs: SupportReq[]) => {
+    supportReqPool.query(sqlCommand, (err: Error, rs: object[]) => {
       if (err) {
         reject(err);
         return;
       }
       arrPrintMySQLRes(rs);
-      resolve(rs);
+      if (rs.length < 1) {
+        reject(new Error('No support request found'));
+        return;
+      }
+      resolve(_sqlSupportReqConversion(rs));
     });
   });
 };
 
-const _deleteReqFromTable = (suppReq: SupportReq,
+const _sqlSupportReqConversion = (suppReqsObj: object[]): SupportReq[] => {
+  const { cols } = cfg.dbs.support_req_db.tables.scheduled_reqs;
+  const result: SupportReq[] = [];
+  suppReqsObj.forEach((obj: any) => { // eslint-disable-line
+    result.push({
+      name: obj[cols.name],
+      email: obj[cols.email],
+      category: obj[cols.category],
+      reqTime: obj[cols.reqTime],
+      reqId: obj[cols.reqId],
+      browserId: obj[cols.browserId],
+    });
+  });
+  return result;
+};
+
+const _deleteReqFromTable = (suppReqId: string | null,
   table: string): Promise<void> => {
-  const sqlCommand = `DELETE FROM ${table} WHERE req_id = '${suppReq.reqId}'`;
+  const where = suppReqId === null ? '' : ` WHERE req_id = '${suppReqId}'`;
+  const sqlCommand = `DELETE FROM ${table}${where}`;
   console.info(`_deleteReqFromTable: sqlCommand=${sqlCommand}`);
   return new Promise((resolve, reject): void => {
     supportReqPool.query(sqlCommand, (err: Error, rs: MySQLResponse) => {
@@ -137,26 +220,6 @@ const _deleteReqFromTable = (suppReq: SupportReq,
         reject(new Error('Cannot delete req'));
       }
       resolve();
-    });
-  });
-};
-
-const _retrieveScheduledReq = (agentId: string): Promise<SupportReq> => {
-  const table = cfg.dbs.support_req_db.tables.scheduled_reqs.name;
-  const sqlCommand = `SELECT * FROM ${table} WHERE agent_id = '${agentId}'`;
-  console.info(`_retrieveScheduledReq: sqlCommand=${sqlCommand}`);
-  return new Promise((resolve, reject): void => {
-    supportReqPool.query(sqlCommand, (err: Error, rs: SupportReq[]) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      arrPrintMySQLRes(rs);
-      if (rs.length < 1) {
-        reject(new Error('No support Req Found'));
-        return;
-      }
-      resolve(rs[0]);
     });
   });
 };

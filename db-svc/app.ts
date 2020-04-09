@@ -23,8 +23,9 @@ app.use(reqLogger); // Logger Middleware
 supportReqCnt.router.post('/addnew', supportReqCnt.postAddNewSupportReq);
 supportReqCnt.router.get('/getnew', supportReqCnt.getRetreiveNewSupportReq);
 supportReqCnt.router.post('/swaptable', supportReqCnt.postShiftSupportReq);
-supportReqCnt.router.get('/checkforreq/:agentId',
-  supportReqCnt.getCheckForSupportReq);
+supportReqCnt.router.get('/check', supportReqCnt.getCheckReq);
+supportReqCnt.router.get('/deleteallreqs', supportReqCnt.getDeleteAllReqs);
+supportReqCnt.router.get('/closereq/:reqId', supportReqCnt.getCloseReq);
 
 // Add custom controller routes here
 app.use('/supportreq/', supportReqCnt.router);

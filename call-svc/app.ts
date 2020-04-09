@@ -26,6 +26,8 @@ authController.router.get('/validate', authController.getValidateToken);
 
 // Init Scheduler controller internal routes here
 schController.router.post('/reqagent', schController.postReqAgent);
+schController.router.get('/clearreqs', schController.getDeleteReqs);
+schController.router.get('/untagagent/:agentId', schController.getUntagAgent);
 
 // Add custom controller routes here
 app.use('/auth', authController.router);
@@ -37,6 +39,8 @@ app.use(errorHandler);
 app.listen(endpoints[svc].http_port, () => {
   console.log(`App listening on port ${endpoints[svc].http_port}`);
 });
+
+setTimeout(() => schController.deleteReqs(true, true), 5000);
 
 module.exports = {
   app,

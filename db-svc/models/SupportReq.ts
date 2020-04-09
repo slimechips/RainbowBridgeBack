@@ -8,7 +8,6 @@ export interface SupportReq {
   reqTime: Date;
   reqId: string;
   browserId: string;
-  status: ReqStatus;
   guestId?: string;
   agentId?: string;
   agentName?: string;

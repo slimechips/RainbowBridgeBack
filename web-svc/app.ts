@@ -11,7 +11,7 @@ import { errorHandler } from 'common-util/error';
 // Controllers
 import * as authController from './controllers/auth';
 import * as webController from './controllers/webroute';
-import * as agentController from './controllers/agent';
+import * as commController from './controllers/common';
 
 const app: express.Application = express();
 
@@ -27,14 +27,14 @@ authController.router.get('/token', authController.getToken);
 // Init user controller internal routes here
 webController.router.post('/newsupportreq', webController.postSupportReq);
 
-// Init agent Controller routes here
-agentController.router.get('/checkforrequest/:agentId',
-  agentController.getCheckForRequest);
+// Init common Controller routes here
+commController.router.get('/closereq', commController.getCloseRequest);
+commController.router.get('/reqstatus', commController.getCheckReqStatus);
 
 // Add custom controller routes here
 app.use('/user', webController.router);
 app.use('/auth', authController.router);
-app.use('/agent', agentController.router);
+app.use('/common', commController.router);
 
 // Error Handling Middleware goes here
 app.use(errorHandler);

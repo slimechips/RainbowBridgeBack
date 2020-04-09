@@ -13,7 +13,8 @@
     "company_id": "5e60a48fd8084c29e64eb849",
     "endpoints": {
       "login": "/api/rainbow/authentication/v1.0/login",
-      "auth_validate": "/api/rainbow/authentication/v1.0/validator"
+      "auth_validate": "/api/rainbow/authentication/v1.0/validator",
+      "update_user": "/api/rainbow/admin/v1.0/users"
     }
   }
 }

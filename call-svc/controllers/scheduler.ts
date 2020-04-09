@@ -1,7 +1,7 @@
 import { Response, Request, NextFunction, Router } from 'express';
 import axios from 'common-util/axios';
 import { cfg, endpoints } from 'common-util/configs';
-import { AxiosResponse } from 'axios';
+import { AxiosResponse, AxiosError } from 'axios';
 import { SupportReq } from '../models/SupportReq';
 import { User } from '../models/User';
 
@@ -34,6 +34,91 @@ export const postReqAgent = (req: Request, res: Response,
     });
 };
 
+export const getDeleteReqs = (req: Request, res: Response): void => {
+  deleteReqs(true, true);
+  res.status(200).json({});
+};
+
+export const getUntagAgent = (req: Request, res: Response,
+  next: NextFunction): void => {
+  const { agentId } = req.params;
+  _getAgents(null)
+    .then((users: User[]) => {
+      if (users.length === 0) {
+        throw new Error('Failed to find agent to untag');
+      }
+      return _extractAgentById(users, agentId);
+    })
+    .then((user: User | null) => {
+      if (user === null) throw new Error('Failed to find agent with the id');
+      return _unTagAgent(user);
+    })
+    .then(() => {
+      res.status(200).json({ success: true });
+    })
+    .catch((err: Error) => next({ err }));
+};
+
+export const deleteReqs = (neww: boolean, scheduled: boolean): void => {
+  const apiUrl = `${endpoints.db.full_url}/supportreq/deleteallreqs`;
+  axios.get(apiUrl, {
+    params: { neww, scheduled },
+  })
+    .catch((err: AxiosError) => {
+      if (err.response === undefined
+         || err.response.data.error !== 'Cannot delete req') {
+        throw new Error('Db request to delete failed');
+      }
+    })
+    .then(() => {
+      console.log('Tables Cleared');
+      return _getAgents(null);
+    })
+    .then((users: User[]) => _unTagAgents(users, 0))
+    .then(() => console.log('Agents set free'))
+    .catch(() => console.error('Failed to clear tables'));
+};
+
+const _unTagAgents = (users: User[], current: number): Promise<void> => {
+  const user = users[current];
+  const timeoutLength = 100000;
+  let cancelled = false;
+  const timeout = setTimeout(() => {
+    cancelled = true;
+    return Promise.reject(new Error('Internet Error'));
+  }, timeoutLength);
+  return new Promise((resolve, reject): void => {
+    _unTagAgent(user)
+      .then(() => {
+        console.log('Untag of agent Successful');
+      })
+      .catch((err: Error) => {
+        console.error(err);
+        console.error('Untag of agent Unsuccessful');
+      })
+      .finally(() => {
+        if (!cancelled) {
+          clearTimeout(timeout);
+        }
+        if (current + 1 === users.length) {
+          resolve();
+          return;
+        }
+        _unTagAgents(users, current + 1)
+          .then(() => resolve())
+          .catch(reject);
+      });
+  });
+};
+
+const _unTagAgent = (user: User): Promise<AxiosResponse> => {
+  const apiUrl = `${cfg.rainbow.scheme}${cfg.rainbow.base_url}:`
+  + `${cfg.rainbow.port}${cfg.rainbow.endpoints.update_user}/${user.id}`;
+  const index = user.tags.indexOf('busy');
+  if (index > -1) user.tags.splice(index, 1);
+  return axios.put(apiUrl, { tags: user.tags });
+};
+
 /**
  * Tries to request an agent for the given support request
  * It will first obtain the list of available agents
@@ -55,9 +140,9 @@ Promise((resolve, reject): void => {
   let agentName: string;
   let tags: string[];
   let errorThrown = false;
-  _checkAvailAgents(suppReq)
-    .then((rs: AxiosResponse) => {
-      const user: User = _extractAvailAgents(rs);
+  _getAgents(suppReq)
+    .then((users: User[]) => {
+      const user: User = _extractAvailAgent(users);
       availAgent = user.id;
       agentName = user.displayName;
       tags = user.tags;
@@ -73,6 +158,7 @@ Promise((resolve, reject): void => {
     .catch((err: Error) => {
       if (errorThrown) throw err;
       errorThrown = true;
+      console.error(err);
       throw new Error('Cannot create guest accounts');
     })
     .then(() => _shiftSuppReqTable(
@@ -198,21 +284,22 @@ const _retrieveSuppReqsDB = (): Promise<AxiosResponse> => {
   return axios.get(apiUrl);
 };
 
-const _checkAvailAgents = (suppReq: SupportReq): Promise<AxiosResponse> => {
+const _getAgents = (suppReq: SupportReq | null): Promise<User[]> => {
   const apiUrl = `${cfg.rainbow.scheme}${cfg.rainbow.base_url}:`
-  + `${cfg.rainbow.port}${cfg.rainbow.endpoints.create_user}`;
+  + `${cfg.rainbow.port}${cfg.rainbow.endpoints.get_users}`;
+  const params = {
+    companyId: cfg.rainbow.company_id,
+    roles: 'user',
+    format: 'full',
+    tags: suppReq === null ? undefined : suppReq.category,
+  };
+
   return axios.get(apiUrl, {
-    params: {
-      companyId: cfg.rainbow.company_id,
-      roles: 'user',
-      format: 'full',
-      tags: suppReq.category,
-    },
-  });
+    params,
+  }).then((rs: AxiosResponse) => rs.data.data);
 };
 
-const _extractAvailAgents = (rs: AxiosResponse): User => {
-  const users: User[] = rs.data.data;
+const _extractAvailAgent = (users: User[]): User => {
   const aUsers: User[] = [];
   users.forEach((user: User) => {
     if (!user.tags.includes(cfg.rainbow.tags.busy)) aUsers.push(user);
@@ -221,6 +308,14 @@ const _extractAvailAgents = (rs: AxiosResponse): User => {
     throw new Error('No available agents');
   }
   return aUsers[0];
+};
+
+const _extractAgentById = (users: User[], id: string): User | null => {
+  let result: User | null = null;
+  users.forEach((user: User) => {
+    if (user.id === id) result = user;
+  });
+  return result;
 };
 
 const _createGuest = (suppReq: SupportReq): Promise<AxiosResponse> => {
