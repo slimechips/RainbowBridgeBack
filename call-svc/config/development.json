@@ -1,5 +1,5 @@
 {
-  "service": "web-svc",
+  "service": "call-svc",
   "endpoints_file": "../etc/endpoints.json",
   "client_secret": "secret",
   "rainbow": {
@@ -14,7 +14,19 @@
     "endpoints": {
       "login": "/api/rainbow/authentication/v1.0/login",
       "auth_validate": "/api/rainbow/authentication/v1.0/validator",
+      "create_user": "/api/rainbow/admin/v1.0/users",
+      "get_users": "/api/rainbow/admin/v1.0/users",
       "update_user": "/api/rainbow/admin/v1.0/users"
+    },
+    "tags": {
+      "available": "available",
+      "busy": "busy"
     }
-  }
+  },
+  "support_req_tables": {
+    "new": "new_reqs",
+    "scheduled": "scheduled_reqs",
+    "completed": "completed_reqs"
+  },
+  "schedule_delay": 5000
 }

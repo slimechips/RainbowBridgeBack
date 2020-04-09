@@ -11,6 +11,12 @@
 		},
 		{
 			"path": "../web-svc"
+		},
+		{
+			"path": "../db-svc"
+		},
+		{
+			"path": "../call-svc"
 		}
 	]
 }

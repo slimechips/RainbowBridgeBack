@@ -2,16 +2,14 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 
-const svc = 'web';
+const svc = 'db';
 process.env.SVC = `${svc}-svc`;
 import { endpoints } from 'common-util/configs';
 import { reqLogger } from 'common-util/logger';
 import { errorHandler } from 'common-util/error';
 
 // Controllers
-import * as authController from './controllers/auth';
-import * as webController from './controllers/webroute';
-import * as commController from './controllers/common';
+import * as supportReqCnt from './controllers/supportreq';
 
 const app: express.Application = express();
 
@@ -21,20 +19,16 @@ app.use(bodyParser.json()); // Body Parser Middle Ware
 app.use(cors({ origin: '*' })); // Cors middleware
 app.use(reqLogger); // Logger Middleware
 
-// Auth controller routes
-authController.router.get('/token', authController.getToken);
-
-// Init user controller internal routes here
-webController.router.post('/newsupportreq', webController.postSupportReq);
-
-// Init common Controller routes here
-commController.router.get('/closereq', commController.getCloseRequest);
-commController.router.get('/reqstatus', commController.getCheckReqStatus);
+// Init customer controller internal routes here
+supportReqCnt.router.post('/addnew', supportReqCnt.postAddNewSupportReq);
+supportReqCnt.router.get('/getnew', supportReqCnt.getRetreiveNewSupportReq);
+supportReqCnt.router.post('/swaptable', supportReqCnt.postShiftSupportReq);
+supportReqCnt.router.get('/check', supportReqCnt.getCheckReq);
+supportReqCnt.router.get('/deleteallreqs', supportReqCnt.getDeleteAllReqs);
+supportReqCnt.router.get('/closereq/:reqId', supportReqCnt.getCloseReq);
 
 // Add custom controller routes here
-app.use('/user', webController.router);
-app.use('/auth', authController.router);
-app.use('/common', commController.router);
+app.use('/supportreq/', supportReqCnt.router);
 
 // Error Handling Middleware goes here
 app.use(errorHandler);

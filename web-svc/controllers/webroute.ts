@@ -1,11 +1,76 @@
-import { Response, Request, Router } from 'express';
-import { RainbowSDK } from 'rainbow-node-sdk';
+import { Response, Request, NextFunction, Router } from 'express';
+import axios from 'common-util/axios';
+import { AxiosResponse } from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+import { endpoints } from 'common-util/configs';
+import { SupportReq } from '../models/SupportReq';
 
 // Init router here
 export const router = Router();
 
-export const getLogin = (req: Request, res: Response) => {
-  res.status(200).json({});
+export const postSupportReq = (req: Request, res: Response,
+  next: NextFunction): void => {
+  const suppReq: SupportReq = req.body.support_req;
+  if (!_checkSupportRequest(suppReq)) {
+    next({ msg: 'Invalid Fields' });
+    return;
+  }
+  suppReq.reqId = uuidv4();
+  suppReq.reqTime = new Date();
+  _retrieveGuestEmails()
+    .then((emails: string[]) => {
+      if (!_checkUniqueEmail(suppReq.email, emails)) {
+        throw new Error('Email not unique');
+      }
+    })
+    .then(() => _addNewSupportReqDb(suppReq))
+    .then(() => _reqAgent(suppReq))
+    .then((rs: AxiosResponse) => {
+      if (rs.status !== 200) throw new Error();
+      const retSuppReq: SupportReq = rs.data.suppReq;
+      const msg = `User ${retSuppReq.name} with id ${retSuppReq.guestId}`
+        + `to connect with agent ${retSuppReq.agentName} with agentId`
+        + `${retSuppReq.agentId}`;
+      console.log(msg);
+      res.status(200).json({ support_req: retSuppReq });
+    })
+    .catch((err: Error) => {
+      next({ err, msg: 'Adding support req failed' });
+    });
 };
 
-export const hello = 'l';
+const _retrieveGuestEmails = (): Promise<string[]> => {
+  console.log('replace me');
+  return Promise.resolve([]);
+};
+
+const _checkUniqueEmail = (email: string, email_list: string[]): boolean => {
+  for (let i = 0; i < email_list.length; i += 1) {
+    if (email === email_list[i]) {
+      console.log('This email has been registered');
+      return false;
+    }
+  }
+  return true;
+};
+
+const _addNewSupportReqDb = (suppReq: SupportReq): Promise<AxiosResponse> => {
+  const apiUrl = `${endpoints.db.full_url}/supportreq/addnew`;
+  return axios.post(apiUrl, { support_req: suppReq });
+};
+
+const _reqAgent = (suppReq: SupportReq): Promise<AxiosResponse> => {
+  const apiUrl = `${endpoints.call.full_url}/scheduler/reqagent`;
+  return axios.post(apiUrl, { support_req: suppReq });
+};
+
+const _checkSupportRequest = (suppReq: SupportReq): boolean => {
+  const required = ['name', 'email', 'category', 'browserId'];
+  let valid = true;
+  required.forEach((field: string) => {
+    if (suppReq[field as keyof SupportReq] === undefined) {
+      valid = false;
+    }
+  });
+  return valid;
+};
