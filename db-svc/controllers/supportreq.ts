@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction, Router, response } from 'express';
+import { Request, Response, NextFunction, Router } from 'express';
 import { cfg } from 'common-util/configs';
 import { supportReqPool } from './init';
 import { MySQLResponse } from '../models/MySQLResponse';
@@ -199,6 +199,9 @@ const _sqlSupportReqConversion = (suppReqsObj: object[]): SupportReq[] => {
       reqTime: obj[cols.reqTime],
       reqId: obj[cols.reqId],
       browserId: obj[cols.browserId],
+      agentId: obj[cols.agentId],
+      agentName: obj[cols.agentName],
+      guestId: obj[cols.guestId],
     });
   });
   return result;

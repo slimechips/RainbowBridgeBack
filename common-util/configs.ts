@@ -5,7 +5,7 @@ import fs from 'fs';
  * Sets the App path of the project
  * @param appPath (optional) Declare a custom app path for the project
  */
-export const setAppDir = (appPath: string = '') => {
+export const setAppDir = (appPath = ''): string => {
   let finalPath: string;
   if (appPath === '') {
     console.log(__dirname);
@@ -22,7 +22,7 @@ export const appDir: string = setAppDir(process.env.SVC);
  * Gets the config file
  * @param environment the node env
  */
-const getConfig = (environment: string = 'development') => {
+const getConfig = (environment = 'development'): object => {
   const configPath = path.join(appDir, 'config', `${environment}.json`);
   const cfg = JSON.parse(fs.readFileSync(configPath).toString());
   console.info(`${cfg.service} Config File: ${configPath}`);
@@ -35,7 +35,7 @@ export const cfg = getConfig(process.env.NODE_ENV);
  * Gets the endponts from endpoint config file
  * @param endpCfgPath Custom endpoint config path
  */
-const getEndpoints = (endpCfgPath: string = '') => {
+const getEndpoints = (endpCfgPath = ''): object => {
   let finalPath: string;
   if (endpCfgPath === '') {
     finalPath = path.join(appDir, cfg.endpoints_file);

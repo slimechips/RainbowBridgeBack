@@ -38,7 +38,10 @@
             "email": "email",
             "category": "category",
             "reqTime": "req_time",
-            "browserId": "browser_id"
+            "browserId": "browser_id",
+            "agentId": "agent_id",
+            "agentName": "agent_name",
+            "guestId": "guest_id"
           }
         },
         "completed_reqs": {
@@ -49,7 +52,10 @@
             "email": "email",
             "category": "category",
             "reqTime": "req_time",
-            "browserId": "browser_id"
+            "browserId": "browser_id",
+            "agentId": "agent_id",
+            "agentName": "agent_name",
+            "guestId": "guest_id"
           }
         }
       }

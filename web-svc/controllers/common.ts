@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction, Router } from 'express';
 import axios from 'common-util/axios';
-import { AxiosResponse } from 'axios';
+import { AxiosResponse, AxiosError } from 'axios';
 import { endpoints } from 'common-util/configs';
 import { SupportReq } from '../models/SupportReq';
 
@@ -53,6 +53,9 @@ const _checkReqStatus = (reqId: string | undefined, agentId: string | undefined,
       return null;
     }
     return rs.data.suppReq;
+  }).catch((err: AxiosError) => {
+    console.error(err.message);
+    return null;
   });
 };
 
