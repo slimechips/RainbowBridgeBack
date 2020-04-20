@@ -14,7 +14,9 @@
     "endpoints": {
       "login": "/api/rainbow/authentication/v1.0/login",
       "auth_validate": "/api/rainbow/authentication/v1.0/validator",
-      "update_user": "/api/rainbow/admin/v1.0/users"
+      "update_user": "/api/rainbow/admin/v1.0/users",
+      "create_user": "/api/rainbow/admin/v1.0/users",
+      "get_users": "/api/rainbow/admin/v1.0/users"
     }
   }
 }

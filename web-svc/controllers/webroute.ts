@@ -1,8 +1,8 @@
 import { Response, Request, NextFunction, Router } from 'express';
 import axios from 'common-util/axios';
-import { AxiosResponse } from 'axios';
+import { AxiosResponse, AxiosError } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import { endpoints } from 'common-util/configs';
+import { endpoints, cfg } from 'common-util/configs';
 import { SupportReq } from '../models/SupportReq';
 
 // Init router here
@@ -11,6 +11,18 @@ export const router = Router();
 export const postSupportReq = (req: Request, res: Response,
   next: NextFunction): void => {
   const suppReq: SupportReq = req.body.support_req;
+  if (!suppReq || !suppReq.name || !suppReq.email || !suppReq.browserId) {
+    const err: Error = new Error('Missing Parameters');
+    next({ err, msg: err.message });
+    return;
+  }
+
+  if (!_testEmail) {
+    const err: Error = new Error('Invailid Email');
+    next({ err, msg: err.message });
+    return;
+  }
+
   if (!_checkSupportRequest(suppReq)) {
     next({ msg: 'Invalid Fields' });
     return;
@@ -23,7 +35,14 @@ export const postSupportReq = (req: Request, res: Response,
         throw new Error('Email not unique');
       }
     })
-    .then(() => _addNewSupportReqDb(suppReq))
+    .then(() => _createGuest(suppReq))
+    .catch((err: Error) => {
+      throw err;
+    })
+    .then((guestId: string) => {
+      suppReq.guestId = guestId;
+      _addNewSupportReqDb(suppReq);
+    })
     .then(() => _reqAgent(suppReq))
     .then((rs: AxiosResponse) => {
       if (rs.status !== 200) throw new Error();
@@ -35,8 +54,13 @@ export const postSupportReq = (req: Request, res: Response,
       res.status(200).json({ support_req: retSuppReq });
     })
     .catch((err: Error) => {
-      next({ err, msg: 'Adding support req failed' });
+      next({ err, msg: err.message });
     });
+};
+
+const _testEmail = (email: string): boolean => {
+  const regExp = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
+  return regExp.test(email);
 };
 
 const _retrieveGuestEmails = (): Promise<string[]> => {
@@ -73,4 +97,24 @@ const _checkSupportRequest = (suppReq: SupportReq): boolean => {
     }
   });
   return valid;
+};
+
+const _createGuest = (suppReq: SupportReq): Promise<string> => {
+  const apiUrl = `${cfg.rainbow.scheme}${cfg.rainbow.base_url}:`
+  + `${cfg.rainbow.port}${cfg.rainbow.endpoints.create_user}`;
+  const body = {
+    firstName: suppReq.name,
+    loginEmail: suppReq.email,
+    roles: ['guest'],
+    password: 'Rainbow1!', // Hardcode for now
+    userInfo1: suppReq.reqId, // Req_id here
+    userInfo2: suppReq.browserId, // Browser_id here
+  };
+  return axios.post(apiUrl, body)
+    .then((rs: AxiosResponse) => rs.data.data.id)
+    .catch((err: AxiosError) => {
+      if (!err.response) throw err;
+      console.error(err.response.statusText);
+      throw new Error('Failed to create guest. Possibly invalid email.');
+    });
 };

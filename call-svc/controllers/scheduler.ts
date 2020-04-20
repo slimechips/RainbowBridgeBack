@@ -21,7 +21,7 @@ export const postReqAgent = (req: Request, res: Response,
   const { support_req: suppReq }: { support_req: SupportReq } = req.body;
   _reqAgent(suppReq)
     .then((arr: string[]) => {
-      [suppReq.agentId, suppReq.agentName, suppReq.guestId] = arr;
+      [suppReq.agentId, suppReq.agentName] = arr;
       res.status(200).json({ suppReq });
     })
     .catch((err: Error) => {
@@ -30,7 +30,7 @@ export const postReqAgent = (req: Request, res: Response,
       } else {
         again = true;
       }
-      next({ err });
+      next({ err, msg: err.message });
     });
 };
 
@@ -136,7 +136,6 @@ const _unTagAgent = (user: User): Promise<AxiosResponse> => {
 const _reqAgent = (suppReq: SupportReq): Promise<string[]> => new
 Promise((resolve, reject): void => {
   let availAgent: string;
-  let guestId: string;
   let agentName: string;
   let tags: string[];
   let errorThrown = false;
@@ -151,23 +150,12 @@ Promise((resolve, reject): void => {
       errorThrown = true;
       throw new Error('No available agents');
     })
-    .then(() => _createGuest(suppReq))
-    .then((rs: AxiosResponse) => {
-      guestId = rs.data.data.id;
-    })
-    .catch((err: Error) => {
-      if (errorThrown) throw err;
-      errorThrown = true;
-      console.error(err);
-      throw new Error('Cannot create guest accounts');
-    })
     .then(() => _shiftSuppReqTable(
       cfg.support_req_tables.new,
       cfg.support_req_tables.scheduled,
       suppReq,
       availAgent,
       agentName,
-      guestId,
     ))
     .catch((err: Error) => {
       if (errorThrown) throw err;
@@ -175,7 +163,7 @@ Promise((resolve, reject): void => {
       throw new Error('Cannot shift support request between tables 1');
     })
     .then(() => _tagAgent(availAgent, tags))
-    .then(() => resolve([availAgent, agentName, guestId]))
+    .then(() => resolve([availAgent, agentName]))
     .catch((err: Error) => {
       reject(err);
     });
@@ -260,12 +248,12 @@ Promise<string[][]> => {
 };
 
 const _shiftSuppReqTable = (from: string, to: string, suppReq: SupportReq,
-  agentId: string, agentName: string, guestId: string): Promise<void> => {
+  agentId: string, agentName: string): Promise<void> => {
   const apiUrl = `${endpoints.db.full_url}/supportreq/swaptable`;
   const newSuppReq = suppReq;
   newSuppReq.agentId = agentId;
   newSuppReq.agentName = agentName;
-  newSuppReq.guestId = guestId;
+  newSuppReq.guestId = suppReq.guestId;
   return axios.post(apiUrl, { suppReq: newSuppReq, from, to });
 };
 
@@ -316,18 +304,4 @@ const _extractAgentById = (users: User[], id: string): User | null => {
     if (user.id === id) result = user;
   });
   return result;
-};
-
-const _createGuest = (suppReq: SupportReq): Promise<AxiosResponse> => {
-  const apiUrl = `${cfg.rainbow.scheme}${cfg.rainbow.base_url}:`
-  + `${cfg.rainbow.port}${cfg.rainbow.endpoints.create_user}`;
-  const body = {
-    firstName: suppReq.name,
-    loginEmail: suppReq.email,
-    roles: ['guest'],
-    password: 'Rainbow1!', // Hardcode for now
-    userInfo1: suppReq.reqId, // Req_id here
-    userInfo2: suppReq.browserId, // Browser_id here
-  };
-  return axios.post(apiUrl, body);
 };
