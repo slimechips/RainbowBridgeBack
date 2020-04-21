@@ -1,7 +1,9 @@
 /* eslint-disable no-undef */
-import server from '../app';
-/* eslint-disable @typescript-eslint/no-var-requires */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const chai = require('chai');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const server = require('../app');
+/* eslint-disable @typescript-eslint/no-var-requires */
 // const chaiHttp = require('chai-http');
 
 chai.should();
@@ -43,7 +45,6 @@ describe('Call service API', () => {
       const support_req = {
         name: 'client1',
         email: 'client_one@gmail.com',
-        reqId: '01',
         browserId: 'chrome',
         category: 'sales',
       };
@@ -60,7 +61,6 @@ describe('Call service API', () => {
       const support_req = {
         name: 'client2',
         email: 'client_two@gmail.com',
-        reqId: '02',
         browserId: 'chrome',
         category: 'sales',
       };
@@ -78,7 +78,6 @@ describe('Call service API', () => {
       const support_req = {
         name: 'client3',
         email: 'client_three@gmail.com',
-        reqId: '03',
         browserId: 'chrome',
         category: 'sales',
       };
