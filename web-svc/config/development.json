@@ -18,5 +18,6 @@
       "create_user": "/api/rainbow/admin/v1.0/users",
       "get_users": "/api/rainbow/admin/v1.0/users"
     }
-  }
+  },
+  "categories": ["sales", "it"]
 }

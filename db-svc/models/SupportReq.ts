@@ -4,7 +4,7 @@ import { ReqStatus } from './ReqStatus';
 export interface SupportReq {
   name: string;
   email: string;
-  category: Category;
+  category: string;
   reqTime: Date;
   reqId: string;
   browserId: string;

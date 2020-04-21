@@ -23,6 +23,12 @@ export const postSupportReq = (req: Request, res: Response,
     return;
   }
 
+  if (!(cfg.categories as string[]).includes(suppReq.category)) {
+    const err: Error = new Error('Invalid Category');
+    next({ err, msg: err.message });
+    return;
+  }
+
   if (!_checkSupportRequest(suppReq)) {
     next({ msg: 'Invalid Fields' });
     return;
