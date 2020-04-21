@@ -141,25 +141,23 @@ const _getCondAndVal = (agentId: string | undefined, reqId: string | undefined,
 
 /**
  * Converts a support request from object to SQL string
- * @param supportReq Support request object
+ * @param suppReq Support request object
  * @param table Table to insert into
  * @returns {string} SQL command to be executed
  */
-const _supportReqToSQL = (supportReq: SupportReq,
+const _supportReqToSQL = (suppReq: SupportReq,
   table: string): string => {
   const { cols } = cfg.dbs.support_req_db.tables.new_reqs;
   let commandA = `INSERT INTO ${table} `
     + `(${cols.reqId}, ${cols.name}, ${cols.email}`
-    + `, ${cols.category}, ${cols.reqTime}, ${cols.browserId}`;
+    + `, ${cols.category}, ${cols.reqTime}, ${cols.browserId}, ${cols.guestId}`;
 
-  let commandB = ` VALUES ('${supportReq.reqId}', '${supportReq.name}'`
-    + `, '${supportReq.email}', '${supportReq.category}'`
-    + `, '${supportReq.reqTime}', '${supportReq.browserId}'`;
-  if (supportReq.agentId !== undefined && supportReq.agentName !== undefined
-  && supportReq.guestId !== undefined) {
-    commandA += `, ${cols.agentId}, ${cols.agentName}, ${cols.guestId}`;
-    commandB += `, '${supportReq.agentId}', '${supportReq.agentName}'`
-      + `, '${supportReq.guestId}'`;
+  let commandB = ` VALUES ('${suppReq.reqId}', '${suppReq.name}'`
+    + `, '${suppReq.email}', '${suppReq.category}'`
+    + `, '${suppReq.reqTime}', '${suppReq.browserId}', '${suppReq.guestId}'`;
+  if (suppReq.agentId !== undefined && suppReq.agentName !== undefined) {
+    commandA += `, ${cols.agentId}, ${cols.agentName}`;
+    commandB += `, '${suppReq.agentId}', '${suppReq.agentName}'`;
   }
   commandA += ')';
   commandB += ')';
